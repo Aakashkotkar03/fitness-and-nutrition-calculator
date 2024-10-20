@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Journey Calculator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <!-- Add Font Awesome for social icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hidden {
+            display: none;
+        }
+        .result-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .plan-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        .accelerated {
+            border: 2px solid #3b82f6;
+        }
+        .social-links {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .social-links a {
+            margin-left: 15px;
+            color: #4a5568;
+            font-size: 24px;
+            transition: color 0.3s;
+        }
+        .social-links a:hover {
+            color: #3b82f6;
+        }
+        /* Added styles for number input */
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4">
+    <div class="social-links">
+        <a href="https://www.linkedin.com/in/aakashkotkar/" target="_blank" title="LinkedIn">
+            <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="https://www.instagram.com/mr_aakash.k/" target="_blank" title="Instagram">
+            <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://github.com/Aakashkotkar03" target="_blank" title="GitHub">
+            <i class="fab fa-github"></i>
+        </a>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h1 class="text-2xl font-bold text-center mb-6">Personalized Fitness Journey Calculator</h1>
+            
+            <form id="fitnessForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="input-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" required placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="email">Email (Optional)</label>
+                        <input type="email" id="email" placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" required min="1" max="120" placeholder="Years">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" required>
+                            <option value="">Select gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" required min="1" max="300" step="0.1" placeholder="Kilograms">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" required min="1" max="300" placeholder="Centimeters">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="targetBodyFat">Target Body Fat %</label>
+                        <input type="number" id="targetBodyFat" required min="5" max="50" step="0.1" placeholder="Desired body fat %">
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors mt-6">
+                    Calculate Your Journey
+                </button>
+            </form>
+        </div>
+        
+        <div id="results" class="hidden space-y-6">
+            <!-- Results will be injected here -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('fitnessForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const formData = {
+                name: document.getElementById('name').value,
+                age: Number(document.getElementById('age').value),
+                gender: document.getElementById('gender').value,
+                weight: Number(document.getElementById('weight').value),
+                height: Number(document.getElementById('height').value),
+                targetBodyFat: Number(document.getElementById('targetBodyFat').value)
+            };
+            
+            // Calculate BMI
+            const heightInMeters = formData.height / 100;
+            const bmi = formData.weight / (heightInMeters * heightInMeters);
+            
+            // Calculate current body fat
+            const currentBodyFat = formData.gender === 'male' 
+                ? (1.20 * bmi) + (0.23 * formData.age) - 16.2
+                : (1.20 * bmi) + (0.23 * formData.age) - 5.4;
+            
+            // Fixed timeframes
+            const standardWeeks = 24; // 6 months
+            const acceleratedWeeks = 12; // 3 months
+            
+            // Calculate nutrition with minimum calorie safety check
+            const isLosing = formData.targetBodyFat < currentBodyFat;
+            
+            let standardCalories = isLosing 
+                ? formData.weight * 30 - 500 
+                : formData.weight * 35;
+            
+            let acceleratedCalories = isLosing
+                ? formData.weight * 30 - 750
+                : formData.weight * 40;
+            
+            // Enforce minimum calorie limit and adjust if needed
+            const MINIMUM_CALORIES = 1200;
+            let standardTimeAdjustment = "";
+            let acceleratedTimeAdjustment = "";
+            
+            if (standardCalories < MINIMUM_CALORIES) {
+                const deficit = MINIMUM_CALORIES - standardCalories;
+                standardCalories = MINIMUM_CALORIES;
+                standardTimeAdjustment = "* Timeline extended due to calorie minimum safety limit";
+            }
+            
+            if (acceleratedCalories < MINIMUM_CALORIES) {
+                const deficit = MINIMUM_CALORIES - acceleratedCalories;
+                acceleratedCalories = MINIMUM_CALORIES;
+                acceleratedTimeAdjustment = "* Timeline extended due to calorie minimum safety limit";
+            }
+            
+            // Generate action plans
+            const standardPlan = isLosing
+                ? [
+                    "Month 1-2: Establish baseline routine and habits",
+                    "Month 3-4: Increase workout intensity gradually",
+                    "Month 5-6: Fine-tune nutrition and exercise balance",
+                    "30 minutes of cardio 3-4 times per week",
+                    "Strength training 3 times per week",
+                    "7-8 hours of sleep per night"
+                ]
+                : [
+                    "Month 1-2: Build foundation with basic exercises",
+                    "Month 3-4: Increase weights and training volume",
+                    "Month 5-6: Focus on progressive overload",
+                    "Focus on compound exercises",
+                    "Track and gradually increase calories",
+                    "Prioritize post-workout nutrition"
+                ];
+            
+            const acceleratedPlan = isLosing
+                ? [
+                    "Month 1: Establish intensive routine and meal prep",
+                    "Month 2: Incorporate HIIT and circuit training",
+                    "Month 3: Maximum intensity and strict nutrition",
+                    "45-60 minutes of HIIT 4-5 times per week",
+                    "Strength training with supersets",
+                    "Strict meal timing and portioning"
+                ]
+                : [
+                    "Month 1: Heavy compound exercises focus",
+                    "Month 2: Increase training volume and intensity",
+                    "Month 3: Peak bulking phase with maximum lifts",
+                    "Progressive overload training",
+                    "Strategic caloric surplus timing",
+                    "Supplement and recovery optimization"
+                ];
+            
+            // Display results
+            const resultsHTML = `
+                <div class="result-card text-center">
+                    <h2 class="text-xl font-bold mb-4">Hey ${formData.name}, here's your fitness journey breakdown!</h2>
+                    <p class="text-lg">
+                        Your current body fat is <span class="font-bold">${currentBodyFat.toFixed(1)}%</span> and 
+                        you want to reach <span class="font-bold">${formData.targetBodyFat}%</span>
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="plan-card">
+                        <h3 class="text-xl font-bold mb-4">Standard Approach (6 Months)</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold">Timeline</h4>
+                                <p>${standardWeeks} weeks</p>
+                                ${standardTimeAdjustment ? `<p class="text-sm text-red-500">${standardTimeAdjustment}</p>` : ''}
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Daily Nutrition</h4>
+                                <ul class="list-disc pl-5">
+                                    <li>Calories: ${Math.round(standardCalories)} kcal</li>
+                                    <li>Protein: ${Math.round(formData.weight * 2)}g</li>
+                                    <li>Carbs: ${Math.round((standardCalories * 0.4) / 4)}g</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">6-Month Action Plan</h4>
+                                <ul class="list-disc pl-5">
+                                    ${standardPlan.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-card accelerated">
+                        <h3 class="text-xl font-bold mb-4">Accelerated Approach (3 Months)</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold">Timeline</h4>
+                                <p>${acceleratedWeeks} weeks</p>
+                                ${acceleratedTimeAdjustment ? `<p class="text-sm text-red-500">${acceleratedTimeAdjustment}</p>` : ''}
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Daily Nutrition</h4>
+                                <ul class="list-disc pl-5">
+                                    <li>Calories: ${Math.round(acceleratedCalories)} kcal</li>
+                                    <li>Protein: ${Math.round(formData.weight * 2.5)}g</li>
+                                    <li>Carbs: ${Math.round((acceleratedCalories * 0.35) / 4)}g</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">3-Month Intensive Plan</h4>
+                                <ul class="list-disc pl-5">
+                                    ${acceleratedPlan.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-card text-center text-sm text-gray-500">
+                    <p>These calculations are estimates based on general guidelines. Always consult with healthcare and fitness professionals before starting a new fitness program.</p>
+                </div>
+            `;
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = resultsHTML;
+            resultsDiv.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
